@@ -1,0 +1,17 @@
+{
+    "name": "scrutinizer/rabbitmq",
+    "description": "Provides Utilities for working with RabbitMQ",
+
+    "autoload": {
+        "psr-0": {
+            "Scrutinizer\\": "src/"
+        }
+    },
+
+    "minimum-stability": "dev",
+
+    "require": {
+        "videlalvaro/php-amqplib": "dev-master",
+        "psr/log": "dev-master"
+    }
+}

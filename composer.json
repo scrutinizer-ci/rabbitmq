@@ -12,6 +12,10 @@
 
     "require": {
         "videlalvaro/php-amqplib": "dev-master",
-        "psr/log": "dev-master"
+        "psr/log": "1.0.0"
+    },
+
+    "require-dev": {
+        "symfony/process": "2.*"
     }
 }

@@ -12,6 +12,7 @@ class RpcServer
     private $con;
     private $serializer;
     private $channel;
+    private $testMode = false;
 
     public function __construct(AMQPConnection $con, Serializer $serializer)
     {
@@ -20,9 +21,14 @@ class RpcServer
         $this->channel = $con->channel();
     }
 
+    public function setTestMode($bool)
+    {
+        $this->testMode = (boolean) $bool;
+    }
+
     public function run($queueName, $messageType, callable $handler)
     {
-        $this->channel->queue_declare($queueName, false, true, false, false);
+        $this->channel->queue_declare($queueName, false, ! $this->testMode, false, $this->testMode);
         $this->channel->basic_qos(0, 1, false);
 
         $this->channel->basic_consume($queueName, '', false, false, false, false,

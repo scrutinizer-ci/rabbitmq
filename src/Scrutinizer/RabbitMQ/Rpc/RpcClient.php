@@ -5,6 +5,12 @@ namespace Scrutinizer\RabbitMQ\Rpc;
 use PhpAmqpLib\Connection\AMQPConnection;
 use JMS\Serializer\Serializer;
 use PhpAmqpLib\Message\AMQPMessage;
+use JMS\Serializer\Exclusion\ExclusionStrategyInterface;
+use JMS\Serializer\Metadata\ClassMetadata;
+use JMS\Serializer\NavigatorContext;
+use JMS\Serializer\Metadata\PropertyMetadata;
+use JMS\Serializer\Exclusion\VersionExclusionStrategy;
+use JMS\Serializer\Exclusion\GroupsExclusionStrategy;
 
 class RpcClient
 {
@@ -58,6 +64,20 @@ class RpcClient
     {
         // Worker queue
         $this->channel->queue_declare($queueName, false, ! $this->testMode, false, $this->testMode);
+
+        $this->serializer->setExclusionStrategy(null);
+
+        if ($payload instanceof Payload) {
+            if ( ! empty($payload->version) && ! empty($payload->groups)) {
+                $this->serializer->setExclusionStrategy(new GroupsVersionExclusionStrategy($payload->version, $payload->groups));
+            } else if ( ! empty($payload->version)) {
+                $this->serializer->setExclusionStrategy(new VersionExclusionStrategy($payload->version));
+            } else if ( ! empty($payload->groups)) {
+                $this->serializer->setExclusionStrategy(new GroupsExclusionStrategy($payload->groups));
+            }
+
+            $payload = $payload->value;
+        }
 
         $message = new AMQPMessage($this->serializer->serialize($payload, 'json'), array(
             'correlation_id' => $correlationId = $this->getCorrelationId(),

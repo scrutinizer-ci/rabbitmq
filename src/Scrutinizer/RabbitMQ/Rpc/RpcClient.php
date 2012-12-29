@@ -62,49 +62,71 @@ class RpcClient
      */
     public function invoke($queueName, $payload, $resultType)
     {
-        // Worker queue
-        $this->channel->queue_declare($queueName, false, ! $this->testMode, false, $this->testMode);
+        return $this->invokeAll(array(array($queueName, $payload, $resultType)))[0];
+    }
 
-        $this->serializer->setExclusionStrategy(null);
+    public function invokeAll(array $calls)
+    {
+        $correlationIds = array();
+        foreach ($calls as $k => $call) {
+            list($queueName, $payload, $resultType) = $call;
 
-        if ($payload instanceof Payload) {
-            if ( ! empty($payload->version) && ! empty($payload->groups)) {
-                $this->serializer->setExclusionStrategy(new GroupsVersionExclusionStrategy($payload->version, $payload->groups));
-            } else if ( ! empty($payload->version)) {
-                $this->serializer->setExclusionStrategy(new VersionExclusionStrategy($payload->version));
-            } else if ( ! empty($payload->groups)) {
-                $this->serializer->setExclusionStrategy(new GroupsExclusionStrategy($payload->groups));
+            // Worker Queue
+            $this->channel->queue_declare($queueName, false, ! $this->testMode, false, $this->testMode);
+
+            $this->serializer->setExclusionStrategy(null);
+            if ($payload instanceof Payload) {
+                if ( ! empty($payload->version) && ! empty($payload->groups)) {
+                    $this->serializer->setExclusionStrategy(new GroupsVersionExclusionStrategy($payload->version, $payload->groups));
+                } else if ( ! empty($payload->version)) {
+                    $this->serializer->setExclusionStrategy(new VersionExclusionStrategy($payload->version));
+                } else if ( ! empty($payload->groups)) {
+                    $this->serializer->setExclusionStrategy(new GroupsExclusionStrategy($payload->groups));
+                }
+
+                $payload = $payload->value;
             }
 
-            $payload = $payload->value;
+            $message = new AMQPMessage($this->serializer->serialize($payload, 'json'), array(
+                'correlation_id' => $correlationId = $this->getCorrelationId(),
+                'reply_to' => $this->callbackQueue,
+            ));
+            $this->channel->basic_publish($message, '', $queueName);
+
+            $this->rpcCalls[$correlationId] = array(
+                'result_received' => false,
+                'result' => null,
+                'result_type' => $resultType,
+            );
+            $correlationIds[$k] = $correlationId;
         }
 
-        $message = new AMQPMessage($this->serializer->serialize($payload, 'json'), array(
-            'correlation_id' => $correlationId = $this->getCorrelationId(),
-            'reply_to' => $this->callbackQueue,
-        ));
-        $this->channel->basic_publish($message, '', $queueName);
-
-        $this->rpcCalls[$correlationId] = array(
-            'result_received' => false,
-            'result' => null,
-            'result_type' => $resultType,
-        );
-
-        while (count($this->channel->callbacks) > 0 && $this->rpcCalls[$correlationId]['result_received'] === false) {
+        while (count($this->channel->callbacks) > 0 && $this->hasMissingResult($correlationIds)) {
             $this->channel->wait();
         }
 
-        if ( ! $this->rpcCalls[$correlationId]['result_received']) {
-            unset($this->rpcCalls[$correlationId]);
+        $results = array();
+        foreach ($correlationIds as $k => $correlationId) {
+            if ($this->rpcCalls[$correlationId]['result_received'] === false) {
+                throw new \RuntimeException(sprintf('Could not retrieve result for correlation id %s.', $correlationId));
+            }
 
-            throw new \RuntimeException('Could not retrieve result from remote server.');
+            $results[$k] = $this->rpcCalls[$correlationId]['result'];
+            unset($this->rpcCalls[$correlationId]);
         }
 
-        $result = $this->rpcCalls[$correlationId]['result'];
-        unset($this->rpcCalls[$correlationId]);
+        return $results;
+    }
 
-        return $result;
+    private function hasMissingResult(array $correlationIds)
+    {
+        foreach ($correlationIds as $correlationId) {
+            if ($this->rpcCalls[$correlationId]['result_received'] === false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function getCorrelationId()

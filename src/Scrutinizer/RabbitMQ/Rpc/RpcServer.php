@@ -38,7 +38,13 @@ class RpcServer
 
                 $this->channel->basic_ack($message->get('delivery_tag'));
 
-                $replyMessage = new AMQPMessage($this->serializer->serialize($rs, 'json'), array(
+                if ($rs instanceof RawValue) {
+                    $msgBody = $rs->value;
+                } else {
+                    $msgBody = $this->serializer->serialize($rs, 'json');
+                }
+
+                $replyMessage = new AMQPMessage($msgBody, array(
                     'correlation_id' => $message->get('correlation_id'),
                 ));
 

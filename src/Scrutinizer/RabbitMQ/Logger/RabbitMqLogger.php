@@ -2,6 +2,7 @@
 
 namespace Scrutinizer\RabbitMQ\Logger;
 
+use JMS\Serializer\SerializerBuilder;
 use Psr\Log\AbstractLogger;
 use PhpAmqpLib\Connection\AMQPConnection;
 use JMS\Serializer\Serializer;
@@ -15,13 +16,13 @@ class RabbitMqLogger extends AbstractLogger
     private $topic;
     private $defaultContext;
 
-    public function __construct(AMQPConnection $con, Serializer $serializer, $topic = null, array $defaultContext = array())
+    public function __construct(AMQPConnection $con, Serializer $serializer = null, $topic = null, array $defaultContext = array())
     {
         $this->con = $con;
         $this->channel = $con->channel();
         $this->channel->exchange_declare('scrutinizer.logs', 'topic');
 
-        $this->serializer = $serializer;
+        $this->serializer = $serializer ?: SerializerBuilder::create()->build();
 
         if (false !== strpos($topic, '.')) {
             throw new \InvalidArgumentException(sprintf('Topic must not contain dots, but got "%s".', $topic));

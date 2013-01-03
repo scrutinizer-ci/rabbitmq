@@ -26,6 +26,11 @@ class RpcServer
         $this->testMode = (boolean) $bool;
     }
 
+    public function runWithHandler($queueName, HandlerInterface $handler)
+    {
+        $this->runWithHandler($queueName, $handler->getPayloadType(), $handler->getCallback());
+    }
+
     public function run($queueName, $messageType, callable $handler)
     {
         $this->channel->queue_declare($queueName, false, ! $this->testMode, false, $this->testMode);

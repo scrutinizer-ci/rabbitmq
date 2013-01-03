@@ -9,10 +9,10 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 abstract class BasicConsumer
 {
-    private $con;
-    private $channel;
+    protected $con;
+    protected $serializer;
+    protected $channel;
     private $queueName;
-    private $serializer;
 
     public function __construct(AMQPConnection $con, $queueName, Serializer $serializer = null)
     {

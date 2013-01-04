@@ -2,6 +2,8 @@
 
 namespace Scrutinizer\RabbitMQ\Util;
 
+use PhpAmqpLib\Connection\AMQPConnection;
+
 abstract class DsnUtils
 {
     public static function parse($dsn)
@@ -11,5 +13,12 @@ abstract class DsnUtils
         }
 
         return array('host' => $match[3], 'user' => $match[1], 'password' => $match[2], 'port' => $match[4], 'path' => $match[5]);
+    }
+
+    public static function createCon($dsn)
+    {
+        $details = self::parse($dsn);
+
+        return new AMQPConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path']);
     }
 }

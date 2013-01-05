@@ -45,6 +45,8 @@ class RpcServer
 
                 if ($rs instanceof RawValue) {
                     $msgBody = $rs->value;
+                } else if ($rs instanceof RpcError) {
+                    $msgBody = 'scrutinizer.rpc_error:'.$this->serializer->serialize($rs, 'json');
                 } else {
                     $msgBody = $this->serializer->serialize($rs, 'json');
                 }

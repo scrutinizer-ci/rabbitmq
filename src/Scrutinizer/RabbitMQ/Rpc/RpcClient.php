@@ -1,5 +1,7 @@
 <?php
 
+declare(ticks = 1000);
+
 namespace Scrutinizer\RabbitMQ\Rpc;
 
 use PhpAmqpLib\Connection\AMQPConnection;
@@ -38,7 +40,15 @@ class RpcClient
                     return;
                 }
 
-                $this->rpcCalls[$correlationId]['result'] = $this->serializer->deserialize($message->body, $this->rpcCalls[$correlationId]['result_type'], 'json');
+                if (0 === strpos($message->body, 'scrutinizer.rpc_error:')) {
+                    $msgBody = substr($message->body, strlen('scrutinizer.rpc_error:'));
+                    $resultType = 'Scrutinizer\RabbitMQ\Rpc\RpcError';
+                } else {
+                    $msgBody = $message->body;
+                    $resultType = $this->rpcCalls[$correlationId]['result_type'];
+                }
+
+                $this->rpcCalls[$correlationId]['result'] = $this->serializer->deserialize($msgBody, $resultType, 'json');
                 $this->rpcCalls[$correlationId]['result_received'] = true;
             }
         );
@@ -60,13 +70,17 @@ class RpcClient
      *
      * @return mixed
      */
-    public function invoke($queueName, $payload, $resultType)
+    public function invoke($queueName, $payload, $resultType, $timeout = 10)
     {
-        return $this->invokeAll(array(array($queueName, $payload, $resultType)))[0];
+        return $this->invokeAll(array(array($queueName, $payload, $resultType)), $timeout)[0];
     }
 
-    public function invokeAll(array $calls)
+    public function invokeAll(array $calls, $timeout = 10)
     {
+        if (empty($calls)) {
+            throw new \InvalidArgumentException('$calls must not be empty.');
+        }
+
         $correlationIds = array();
         foreach ($calls as $k => $call) {
             list($queueName, $payload, $resultType) = $call;
@@ -101,8 +115,10 @@ class RpcClient
             $correlationIds[$k] = $correlationId;
         }
 
-        while (count($this->channel->callbacks) > 0 && $this->hasMissingResult($correlationIds)) {
-            $this->channel->wait();
+        $start = time();
+        while ($start + $timeout > time() && count($this->channel->callbacks) > 0 && $this->hasMissingResult($correlationIds)) {
+            $this->channel->wait(null, true);
+            usleep(1E5); // 100 ms
         }
 
         $results = array();

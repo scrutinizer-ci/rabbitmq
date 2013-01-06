@@ -68,11 +68,18 @@ class RpcClient
      * @param $payload
      * @param $resultType
      *
+     * @throws RpcErrorException when a remote error occurs
+     *
      * @return mixed
      */
     public function invoke($queueName, $payload, $resultType, $timeout = 10)
     {
-        return $this->invokeAll(array(array($queueName, $payload, $resultType)), $timeout)[0];
+        $rs = $this->invokeAll(array(array($queueName, $payload, $resultType)), $timeout);
+        if ($rs[0] instanceof RpcError) {
+            throw new RpcErrorException($rs[0]);
+        }
+
+        return $rs[0];
     }
 
     public function invokeAll(array $calls, $timeout = 10)

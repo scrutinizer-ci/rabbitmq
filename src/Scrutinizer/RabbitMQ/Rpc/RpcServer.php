@@ -28,7 +28,7 @@ class RpcServer
 
     public function runWithHandler($queueName, HandlerInterface $handler)
     {
-        $this->runWithHandler($queueName, $handler->getPayloadType(), $handler->getCallback());
+        $this->run($queueName, $handler->getPayloadType(), $handler->getCallback());
     }
 
     public function run($queueName, $messageType, callable $handler)

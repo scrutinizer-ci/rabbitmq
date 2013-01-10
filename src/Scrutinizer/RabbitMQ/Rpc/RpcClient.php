@@ -4,6 +4,7 @@ declare(ticks = 1000);
 
 namespace Scrutinizer\RabbitMQ\Rpc;
 
+use JMS\Serializer\SerializerBuilder;
 use PhpAmqpLib\Connection\AMQPConnection;
 use JMS\Serializer\Serializer;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -24,10 +25,10 @@ class RpcClient
 
     private $rpcCalls = array();
 
-    public function __construct(AMQPConnection $con, Serializer $serializer)
+    public function __construct(AMQPConnection $con, Serializer $serializer = null)
     {
         $this->con = $con;
-        $this->serializer = $serializer;
+        $this->serializer = $serializer ?: SerializerBuilder::create()->build();
         $this->channel = $con->channel();
 
         // Exclusive, Auto-Ack, Non-Passive, Non-Durable

@@ -2,7 +2,7 @@
 
 namespace Scrutinizer\RabbitMQ\Util;
 
-use PhpAmqpLib\Connection\AMQPConnection;
+use Scrutinizer\RabbitMQ\RetryConnection;
 
 abstract class DsnUtils
 {
@@ -19,6 +19,6 @@ abstract class DsnUtils
     {
         $details = self::parse($dsn);
 
-        return new AMQPConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path']);
+        return new RetryConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path']);
     }
 }

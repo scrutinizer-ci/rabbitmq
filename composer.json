@@ -13,7 +13,7 @@
     "require": {
         "videlalvaro/php-amqplib": "dev-master",
         "psr/log": "1.0.0",
-        "jms/serializer": "dev-master"
+        "jms/serializer": "0.12.*"
     },
 
     "require-dev": {

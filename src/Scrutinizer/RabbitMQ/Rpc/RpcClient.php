@@ -4,6 +4,7 @@ declare(ticks = 1000);
 
 namespace Scrutinizer\RabbitMQ\Rpc;
 
+use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use PhpAmqpLib\Connection\AMQPConnection;
 use JMS\Serializer\Serializer;
@@ -94,20 +95,19 @@ class RpcClient
             // Worker Queue
             $this->channel->queue_declare($queueName, false, ! $this->testMode, false, $this->testMode);
 
-            $this->serializer->setExclusionStrategy(null);
+            $context = new SerializationContext();
             if ($payload instanceof Payload) {
-                if ( ! empty($payload->version) && ! empty($payload->groups)) {
-                    $this->serializer->setExclusionStrategy(new GroupsVersionExclusionStrategy($payload->version, $payload->groups));
-                } else if ( ! empty($payload->version)) {
-                    $this->serializer->setExclusionStrategy(new VersionExclusionStrategy($payload->version));
-                } else if ( ! empty($payload->groups)) {
-                    $this->serializer->setExclusionStrategy(new GroupsExclusionStrategy($payload->groups));
+                if ( ! empty($payload->version)) {
+                    $context->setVersion($payload->version);
+                }
+                if ( ! empty($payload->groups)) {
+                    $context->setGroups($payload->groups);
                 }
 
                 $payload = $payload->value;
             }
 
-            $message = new AMQPMessage($this->serializer->serialize($payload, 'json'), array(
+            $message = new AMQPMessage($this->serializer->serialize($payload, 'json', $context), array(
                 'correlation_id' => $correlationId = $this->getCorrelationId(),
                 'reply_to' => $this->callbackQueue,
             ));

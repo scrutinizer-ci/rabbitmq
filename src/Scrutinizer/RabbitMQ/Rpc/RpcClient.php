@@ -54,6 +54,11 @@ class RpcClient
         );
     }
 
+    public function getChannel()
+    {
+        return $this->channel;
+    }
+
     public function setTestMode($bool)
     {
         $this->testMode = (boolean) $bool;

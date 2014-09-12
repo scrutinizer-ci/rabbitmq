@@ -8,6 +8,7 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use PhpAmqpLib\Connection\AMQPConnection;
 use JMS\Serializer\Serializer;
+use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Message\AMQPMessage;
 use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
@@ -128,8 +129,11 @@ class RpcClient
 
         $start = time();
         while ($start + $timeout > time() && count($this->channel->callbacks) > 0 && $this->hasMissingResult($correlationIds)) {
-            $this->channel->wait(null, true);
-            usleep(1E5); // 100 ms
+            try {
+                $this->channel->wait(null, false, 1);
+            } catch (AMQPTimeoutException $ex) {
+                // Just hand over to the while statement condition.
+            }
         }
 
         $results = array();

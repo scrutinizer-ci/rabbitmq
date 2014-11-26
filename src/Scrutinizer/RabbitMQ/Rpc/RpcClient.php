@@ -21,6 +21,7 @@ class RpcClient
     private $channel;
     private $callbackQueue;
     private $testMode = false;
+    private $initialized = false;
 
     private $rpcCalls = array();
 
@@ -28,7 +29,16 @@ class RpcClient
     {
         $this->con = $con;
         $this->serializer = $serializer ?: SerializerBuilder::create()->build();
-        $this->channel = $con->channel();
+    }
+
+    private function initialize()
+    {
+        if ($this->initialized) {
+            return;
+        }
+        $this->initialized = true;
+
+        $this->channel = $this->con->channel();
 
         // Exclusive, Auto-Ack, Non-Passive, Non-Durable
         list($this->callbackQueue,,) = $this->channel->queue_declare('', false, false, true, true);
@@ -56,6 +66,8 @@ class RpcClient
 
     public function getChannel()
     {
+        $this->initialize();
+
         return $this->channel;
     }
 
@@ -92,6 +104,8 @@ class RpcClient
         if (empty($calls)) {
             throw new \InvalidArgumentException('$calls must not be empty.');
         }
+
+        $this->initialize();
 
         $correlationIds = array();
         foreach ($calls as $k => $call) {

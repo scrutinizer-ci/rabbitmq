@@ -3,6 +3,7 @@
 namespace Scrutinizer\RabbitMQ;
 
 use PhpAmqpLib\Connection\AMQPConnection;
+use PhpAmqpLib\Connection\AMQPLazyConnection;
 use PhpAmqpLib\Exception\AMQPRuntimeException;
 
 /**
@@ -13,23 +14,25 @@ use PhpAmqpLib\Exception\AMQPRuntimeException;
  * neither an interface, nor an abstract base class which we could use. We would have to maintain all public method
  * ourselves which is some work.
  */
-class RetryConnection extends AMQPConnection
+class RetryConnection extends AMQPLazyConnection
 {
-    public function __construct()
+    protected function connect()
     {
-        $ref = new \ReflectionClass(get_parent_class());
-        $args = func_get_args();
+        $firstException = null;
 
         // First check whether the connection can be established. If that's the case we close the temporary connection
         // again, and call the parent method. This avoids terminating immediately when the RabbitMQ server restarts.
         $attempt = 0;
         while ($attempt < 5) {
             try {
-                $con = $ref->newInstanceArgs($args);
-                $con->close();
+                parent::connect();
 
-                break;
+                return;
             } catch (AMQPRuntimeException $ex) {
+                if ($firstException !== null) {
+                    $firstException = $ex;
+                }
+
                 if (false === strpos($ex->getMessage(), 'Connection refused')) {
                     throw $ex;
                 }
@@ -40,6 +43,6 @@ class RetryConnection extends AMQPConnection
             $attempt += 1;
         }
 
-        call_user_func_array(array(get_parent_class(), '__construct'), $args);
+        throw $firstException;
     }
 }

@@ -29,7 +29,7 @@ class RetryConnection extends AMQPLazyConnection
 
                 return;
             } catch (AMQPRuntimeException $ex) {
-                if ($firstException !== null) {
+                if ($firstException === null) {
                     $firstException = $ex;
                 }
 

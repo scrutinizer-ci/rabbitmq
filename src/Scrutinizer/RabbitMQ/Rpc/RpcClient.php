@@ -177,7 +177,7 @@ class RpcClient
     private function getCorrelationId()
     {
         do {
-            $corId = uniqid('', false);
+            $corId = sha1(uniqid(mt_rand(), true));
         } while (isset($this->rpcCalls[$corId]));
 
         return $corId;

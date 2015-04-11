@@ -153,7 +153,7 @@ class RpcClient
         $results = array();
         foreach ($correlationIds as $k => $correlationId) {
             if ($this->rpcCalls[$correlationId]['result_received'] === false) {
-                throw new \RuntimeException(sprintf('Could not retrieve result for correlation id %s.', $correlationId));
+                throw new \RuntimeException(sprintf('Could not retrieve result for %s (correlation id %s).', $calls[$k][0], $correlationId));
             }
 
             $results[$k] = $this->rpcCalls[$correlationId]['result'];

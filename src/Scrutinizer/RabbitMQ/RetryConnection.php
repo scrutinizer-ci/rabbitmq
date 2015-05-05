@@ -20,8 +20,6 @@ class RetryConnection extends AMQPLazyConnection
     {
         $firstException = null;
 
-        // First check whether the connection can be established. If that's the case we close the temporary connection
-        // again, and call the parent method. This avoids terminating immediately when the RabbitMQ server restarts.
         $attempt = 0;
         while ($attempt < 5) {
             try {

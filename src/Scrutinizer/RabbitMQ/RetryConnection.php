@@ -33,7 +33,7 @@ class RetryConnection extends AMQPLazyConnection
                     $firstException = $ex;
                 }
 
-                if (false === strpos($ex->getMessage(), 'Connection refused')) {
+                if (false === strpos($ex->getMessage(), 'Connection refused') && false === strpos($ex->getMessage(), 'Connection timed out')) {
                     throw $ex;
                 }
 

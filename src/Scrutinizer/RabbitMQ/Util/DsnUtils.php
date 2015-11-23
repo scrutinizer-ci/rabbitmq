@@ -3,6 +3,7 @@
 namespace Scrutinizer\RabbitMQ\Util;
 
 use Scrutinizer\RabbitMQ\RetryConnection;
+use Scrutinizer\RabbitMQ\RetrySSLConnection;
 
 abstract class DsnUtils
 {
@@ -15,9 +16,20 @@ abstract class DsnUtils
         return array('host' => $match[3], 'user' => $match[1], 'password' => $match[2], 'port' => $match[4], 'path' => $match[5]);
     }
 
-    public static function createCon($dsn)
+    public static function createCon($dsn, $sslCertificate = null)
     {
         $details = self::parse($dsn);
+
+        if ($sslCertificate !== null) {
+            return new RetrySSLConnection(
+                $details['host'], $details['port'], $details['user'], $details['password'], $details['path'],
+                array(
+                    'capath' => '/etc/ssl/certs',
+                    'cafile' => $sslCertificate,
+                    'verify_peer' => true,
+                )
+            );
+        }
 
         return new RetryConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path']);
     }

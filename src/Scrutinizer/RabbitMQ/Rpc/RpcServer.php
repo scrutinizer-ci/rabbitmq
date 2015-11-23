@@ -2,8 +2,8 @@
 
 namespace Scrutinizer\RabbitMQ\Rpc;
 
-use PhpAmqpLib\Connection\AMQPConnection;
 use JMS\Serializer\Serializer;
+use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Channel\AMQPChannel;
 
@@ -14,7 +14,7 @@ class RpcServer
     private $channel;
     private $testMode = false;
 
-    public function __construct(AMQPConnection $con, Serializer $serializer)
+    public function __construct(AbstractConnection $con, Serializer $serializer)
     {
         $this->con = $con;
         $this->serializer = $serializer;

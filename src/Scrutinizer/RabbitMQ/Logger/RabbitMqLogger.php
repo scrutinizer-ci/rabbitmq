@@ -3,8 +3,8 @@
 namespace Scrutinizer\RabbitMQ\Logger;
 
 use JMS\Serializer\SerializerBuilder;
+use PhpAmqpLib\Connection\AbstractConnection;
 use Psr\Log\AbstractLogger;
-use PhpAmqpLib\Connection\AMQPConnection;
 use JMS\Serializer\Serializer;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -16,7 +16,7 @@ class RabbitMqLogger extends AbstractLogger
     private $topic;
     private $defaultContext;
 
-    public function __construct(AMQPConnection $con, Serializer $serializer = null, $topic = null, array $defaultContext = array())
+    public function __construct(AbstractConnection $con, Serializer $serializer = null, $topic = null, array $defaultContext = array())
     {
         $this->con = $con;
         $this->channel = $con->channel();

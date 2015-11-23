@@ -6,7 +6,7 @@ namespace Scrutinizer\RabbitMQ\Rpc;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
-use PhpAmqpLib\Connection\AMQPConnection;
+use PhpAmqpLib\Connection\AbstractConnection;
 use JMS\Serializer\Serializer;
 use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -26,7 +26,7 @@ class RpcClient
 
     private $rpcCalls = array();
 
-    public function __construct(AMQPConnection $con, Serializer $serializer = null)
+    public function __construct(AbstractConnection $con, Serializer $serializer = null)
     {
         $this->con = $con;
         $this->serializer = $serializer ?: SerializerBuilder::create()->build();

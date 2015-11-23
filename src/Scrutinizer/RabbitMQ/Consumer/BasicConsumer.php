@@ -4,7 +4,7 @@ namespace Scrutinizer\RabbitMQ\Consumer;
 
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
-use PhpAmqpLib\Connection\AMQPConnection;
+use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
 abstract class BasicConsumer
@@ -14,7 +14,7 @@ abstract class BasicConsumer
     protected $channel;
     private $queueName;
 
-    public function __construct(AMQPConnection $con, $queueName, Serializer $serializer = null)
+    public function __construct(AbstractConnection $con, $queueName, Serializer $serializer = null)
     {
         $this->con = $con;
         $this->channel = $con->channel();

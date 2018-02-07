@@ -29,12 +29,11 @@ abstract class DsnUtils
                     'verify_peer' => true,
                 ),
                 array(
-                    'read_write_timeout' => 10,
-                    'heartbeat' => 5,
+                    'heartbeat' => 10,
                 )
             );
         }
 
-        return new RetryConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path'], false, 'AMQPLAIN', null, 'en_US', 3.0, 10, null, false, 5);
+        return new RetryConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path'], false, 'AMQPLAIN', null, 'en_US', 3.0, 3.0, null, false, 10);
     }
 }

@@ -27,13 +27,10 @@ abstract class DsnUtils
                     'capath' => '/etc/ssl/certs',
                     'cafile' => $sslCertificate,
                     'verify_peer' => true,
-                ),
-                array(
-                    'heartbeat' => 10,
                 )
             );
         }
 
-        return new RetryConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path'], false, 'AMQPLAIN', null, 'en_US', 3.0, 3.0, null, false, 10);
+        return new RetryConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path']);
     }
 }

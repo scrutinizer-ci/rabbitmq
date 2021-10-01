@@ -11,7 +11,7 @@
     "minimum-stability": "dev",
 
     "require": {
-        "videlalvaro/php-amqplib": "dev-master",
+        "php-amqplib/php-amqplib": "^2.12",
         "psr/log": "1.0.0",
         "jms/serializer": "*@dev"
     },

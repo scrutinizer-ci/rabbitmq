@@ -2,9 +2,10 @@
 
 namespace Scrutinizer\Tests\RabbitMQ\Util;
 
+use PHPUnit\Framework\TestCase;
 use Scrutinizer\RabbitMQ\Util\DsnUtils;
 
-class DsnUtilsTest extends \PHPUnit_Framework_TestCase
+class DsnUtilsTest extends TestCase
 {
     public function testParse()
     {

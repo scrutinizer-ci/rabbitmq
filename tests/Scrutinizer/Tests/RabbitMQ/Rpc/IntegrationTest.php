@@ -2,6 +2,7 @@
 
 namespace Scrutinizer\Tests\RabbitMQ\Rpc;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 use Scrutinizer\RabbitMQ\Rpc\RpcClient;
 use PhpAmqpLib\Connection\AMQPConnection;
@@ -9,7 +10,7 @@ use Scrutinizer\RabbitMQ\Util\DsnUtils;
 use JMS\Serializer\SerializerBuilder;
 use PhpAmqpLib\Helper\MiscHelper;
 
-class IntegrationTest extends \PHPUnit_Framework_TestCase
+class IntegrationTest extends TestCase
 {
     /** @var AMQPConnection */
     private $con;
@@ -29,7 +30,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $proc->stop(1);
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $details = DsnUtils::parse($_SERVER['RABBITMQ_DSN']);
         $this->con = new AMQPConnection($details['host'], $details['port'], $details['user'], $details['password'], $details['path']);

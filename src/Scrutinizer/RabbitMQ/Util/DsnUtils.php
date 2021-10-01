@@ -27,6 +27,7 @@ abstract class DsnUtils
                     'capath' => '/etc/ssl/certs',
                     'cafile' => $sslCertificate,
                     'verify_peer' => true,
+                    'security_level' => 1, // We need to reduce this since the signing algorithm is otherwise considered too weak.
                 )
             );
         }

@@ -53,7 +53,7 @@ class RpcClient
 
                 if (0 === strpos($message->body, 'scrutinizer.rpc_error:')) {
                     $msgBody = substr($message->body, strlen('scrutinizer.rpc_error:'));
-                    $resultType = 'Scrutinizer\RabbitMQ\Rpc\RpcError';
+                    $resultType = RpcError::class;
                 } else {
                     $msgBody = $message->body;
                     $resultType = $this->rpcCalls[$correlationId]['result_type'];

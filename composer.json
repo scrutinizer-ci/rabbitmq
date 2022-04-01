@@ -17,7 +17,7 @@
     },
 
     "require-dev": {
-        "symfony/process": "2.*",
+        "symfony/process": "^5.4",
         "phpunit/phpunit": "9.5.x-dev"
     }
 }

@@ -8,7 +8,7 @@ if ( ! isset($_SERVER['argv'][1])) {
 }
 
 $conDetails = \Scrutinizer\RabbitMQ\Util\DsnUtils::parse($_SERVER['argv'][1]);
-$con = new \PhpAmqpLib\Connection\AMQPConnection($conDetails['host'], $conDetails['port'], $conDetails['user'], $conDetails['password'], $conDetails['path']);
+$con = new \PhpAmqpLib\Connection\AMQPStreamConnection($conDetails['host'], $conDetails['port'], $conDetails['user'], $conDetails['password'], $conDetails['path']);
 
 $server = new \Scrutinizer\RabbitMQ\Rpc\RpcServer($con, \JMS\Serializer\SerializerBuilder::create()->build());
 $server->setTestMode(true);

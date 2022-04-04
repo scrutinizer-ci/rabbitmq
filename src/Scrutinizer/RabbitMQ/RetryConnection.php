@@ -4,6 +4,7 @@ namespace Scrutinizer\RabbitMQ;
 
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Connection\AMQPLazyConnection;
+use PhpAmqpLib\Exception\AMQPExceptionInterface;
 use PhpAmqpLib\Exception\AMQPRuntimeException;
 
 /**
@@ -26,7 +27,7 @@ class RetryConnection extends AMQPLazyConnection
                 parent::connect();
 
                 return;
-            } catch (AMQPRuntimeException $ex) {
+            } catch (AMQPExceptionInterface $ex) {
                 if ($firstException === null) {
                     $firstException = $ex;
                 }
